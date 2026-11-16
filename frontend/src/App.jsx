@@ -8,6 +8,7 @@ export default function App() {
   const [produk, setProduk] = useState(produkAwal);
   const [kataKunci, setKataKunci] = useState("");
   const [tampilTambah, setTampilTambah] = useState(false);
+  const [produkDiedit, setProdukDiedit] = useState(null);
 
   const hasilFilter = produk.filter((p) =>
     p.nama.toLowerCase().includes(kataKunci.trim().toLowerCase())
@@ -17,6 +18,11 @@ export default function App() {
     const idBaru = produk.reduce((maks, p) => Math.max(maks, p.id), 0) + 1;
     setProduk([...produk, { id: idBaru, nama, harga }]);
     setTampilTambah(false);
+  };
+
+  const simpanEdit = ({ nama, harga }) => {
+    setProduk(produk.map((p) => (p.id === produkDiedit.id ? { ...p, nama, harga } : p)));
+    setProdukDiedit(null);
   };
 
   return (
@@ -36,7 +42,7 @@ export default function App() {
         <span className="count">{produk.length} produk</span>
       </div>
 
-      <ProductList daftar={hasilFilter} onEdit={() => {}} onHapus={() => {}} />
+      <ProductList daftar={hasilFilter} onEdit={setProdukDiedit} onHapus={() => {}} />
 
       <p className="footer-info">
         Menampilkan {hasilFilter.length} dari {produk.length} produk
@@ -44,6 +50,14 @@ export default function App() {
 
       {tampilTambah && (
         <ProductFormModal onSimpan={tambahProduk} onBatal={() => setTampilTambah(false)} />
+      )}
+
+      {produkDiedit && (
+        <ProductFormModal
+          produk={produkDiedit}
+          onSimpan={simpanEdit}
+          onBatal={() => setProdukDiedit(null)}
+        />
       )}
     </main>
   );
