@@ -1,0 +1,13 @@
+{
+  "name": "api-produk",
+  "version": "1.0.0",
+  "description": "REST API daftar produk dengan ExpressJS (data disimpan di array)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
