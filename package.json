@@ -1,13 +1,25 @@
 {
   "name": "api-produk",
   "version": "1.0.0",
-  "description": "REST API daftar produk dengan ExpressJS (data disimpan di array)",
+  "description": "REST API daftar produk dengan ExpressJS dan Prisma (PostgreSQL / Neon)",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "tsx app.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed"
   },
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.0.0",
+    "tsx": "^4.19.0"
   }
 }
