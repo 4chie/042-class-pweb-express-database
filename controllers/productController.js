@@ -54,4 +54,36 @@ const createProduct = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllProducts, getProductById, createProduct };
+// PUT /products: body sama dengan POST ditambah id produk yang diubah
+const updateProduct = async (req, res, next) => {
+  try {
+    const body = req.body || {};
+
+    if (!Number.isInteger(body.id) || !isValidProductBody(body)) {
+      return res.status(400).json({
+        message: "id (bilangan bulat), name (string), dan price (bilangan bulat >= 0) wajib diisi",
+      });
+    }
+
+    const existing = await prisma.product.findUnique({ where: { id: body.id } });
+    if (!existing) {
+      return res.status(404).json({ message: "Produk tidak ditemukan" });
+    }
+
+    const updated = await prisma.product.update({
+      where: { id: body.id },
+      data: { name: body.name.trim(), price: body.price },
+    });
+
+    res.status(200).json(updated);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getAllProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+};
