@@ -132,3 +132,28 @@ body {
   color: #6b7280;
   padding: 32px 0;
 }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.search {
+  flex: 1;
+  max-width: 320px;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.footer-info {
+  margin-top: 16px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
