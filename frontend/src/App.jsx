@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { produkAwal } from "./data.js";
+import ProductList from "./components/ProductList.jsx";
 
 export default function App() {
   const [produk, setProduk] = useState(produkAwal);
@@ -14,6 +15,7 @@ export default function App() {
         <button className="btn btn-primary">+ Tambah Produk</button>
       </header>
       <p className="count">{produk.length} produk</p>
+      <ProductList daftar={produk} onEdit={() => {}} onHapus={() => {}} />
     </main>
   );
 }

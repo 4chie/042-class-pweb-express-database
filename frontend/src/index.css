@@ -86,3 +86,49 @@ body {
   color: #6b7280;
   font-size: 0.8rem;
 }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.card-id {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.card-nama {
+  margin: 4px 0 2px;
+  font-size: 1.05rem;
+}
+
+.card-harga {
+  margin: 0 0 14px;
+  color: #1d3fd8;
+  font-weight: 700;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.card-actions .btn {
+  flex: 1;
+}
+
+.empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 32px 0;
+}
