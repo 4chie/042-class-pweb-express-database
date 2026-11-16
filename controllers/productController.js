@@ -81,9 +81,29 @@ const updateProduct = async (req, res, next) => {
   }
 };
 
+const deleteProduct = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const existing = Number.isInteger(id)
+      ? await prisma.product.findUnique({ where: { id } })
+      : null;
+
+    if (!existing) {
+      return res.status(404).json({ message: "Produk tidak ditemukan" });
+    }
+
+    await prisma.product.delete({ where: { id } });
+
+    res.status(200).json({ message: "Produk berhasil dihapus", data: existing });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
   createProduct,
   updateProduct,
+  deleteProduct,
 };
