@@ -3,12 +3,14 @@ import { produkAwal } from "./data.js";
 import ProductList from "./components/ProductList.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import ProductFormModal from "./components/ProductFormModal.jsx";
+import DeleteModal from "./components/DeleteModal.jsx";
 
 export default function App() {
   const [produk, setProduk] = useState(produkAwal);
   const [kataKunci, setKataKunci] = useState("");
   const [tampilTambah, setTampilTambah] = useState(false);
   const [produkDiedit, setProdukDiedit] = useState(null);
+  const [produkDihapus, setProdukDihapus] = useState(null);
 
   const hasilFilter = produk.filter((p) =>
     p.nama.toLowerCase().includes(kataKunci.trim().toLowerCase())
@@ -23,6 +25,11 @@ export default function App() {
   const simpanEdit = ({ nama, harga }) => {
     setProduk(produk.map((p) => (p.id === produkDiedit.id ? { ...p, nama, harga } : p)));
     setProdukDiedit(null);
+  };
+
+  const hapusProduk = () => {
+    setProduk(produk.filter((p) => p.id !== produkDihapus.id));
+    setProdukDihapus(null);
   };
 
   return (
@@ -42,7 +49,7 @@ export default function App() {
         <span className="count">{produk.length} produk</span>
       </div>
 
-      <ProductList daftar={hasilFilter} onEdit={setProdukDiedit} onHapus={() => {}} />
+      <ProductList daftar={hasilFilter} onEdit={setProdukDiedit} onHapus={setProdukDihapus} />
 
       <p className="footer-info">
         Menampilkan {hasilFilter.length} dari {produk.length} produk
@@ -57,6 +64,14 @@ export default function App() {
           produk={produkDiedit}
           onSimpan={simpanEdit}
           onBatal={() => setProdukDiedit(null)}
+        />
+      )}
+
+      {produkDihapus && (
+        <DeleteModal
+          produk={produkDihapus}
+          onKonfirmasi={hapusProduk}
+          onBatal={() => setProdukDihapus(null)}
         />
       )}
     </main>
