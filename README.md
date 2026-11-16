@@ -1,29 +1,33 @@
-# API Daftar Produk (ExpressJS)
+# API Daftar Produk (ExpressJS + Prisma)
 
-REST API sederhana untuk daftar produk. Data disimpan di array (tanpa database), jadi akan kembali ke data awal setiap server di-restart.
+REST API produk dengan ExpressJS. Data disimpan di database PostgreSQL (Neon) lewat Prisma 7.
 
 ## Struktur Proyek
 
 ```
-api-produk/
-├── app.js                          # entry point, setup Express
-├── package.json
-├── testing.http                    # request untuk pengujian (REST Client)
-├── data/
-│   └── products.js                 # array data produk
-├── routes/
-│   └── productRoutes.js            # definisi URL + method
-├── controllers/
-│   └── productController.js        # logika tiap endpoint
-└── README.md
+├── app.js                      # entry point, setup Express
+├── prisma.config.ts            # konfigurasi Prisma (schema, migrasi, seed, DATABASE_URL)
+├── prisma/
+│   ├── schema.prisma           # model Product
+│   ├── migrations/             # riwayat migrasi database
+│   └── seed.js                 # data awal (Buku, Pulpen)
+├── lib/prisma.js               # instance Prisma Client + adapter PostgreSQL
+├── routes/productRoutes.js     # definisi URL + method
+├── controllers/productController.js
+├── testing.http                # request pengujian (REST Client VS Code)
+└── .env.example                # contoh isi .env
 ```
 
 ## Cara Menjalankan
 
-Prasyarat: Node.js sudah terpasang.
+Prasyarat: Node.js 20.19+ dan database PostgreSQL (misalnya Neon).
 
 ```bash
 npm install
+cp .env.example .env          # lalu isi DATABASE_URL
+npx prisma migrate deploy     # membuat tabel products
+npx prisma generate           # membuat Prisma Client di folder generated/
+npm run prisma:seed           # (opsional) isi data awal
 npm start
 ```
 
@@ -31,102 +35,38 @@ Server berjalan di `http://localhost:3000`.
 
 ## Daftar Endpoint
 
-| Method | Endpoint        | Deskripsi                        | Status sukses | Status gagal |
-| ------ | --------------- | -------------------------------- | ------------- | ------------ |
-| GET    | `/products`     | Ambil semua produk               | 200           | -            |
-| GET    | `/products/:id` | Ambil satu produk berdasarkan ID | 200           | 404          |
-| POST   | `/products`     | Tambah produk baru               | 201           | 400          |
+| Method | Endpoint        | Deskripsi                                  | Sukses | Gagal    |
+| ------ | --------------- | ------------------------------------------ | ------ | -------- |
+| GET    | `/products`     | Tampilkan seluruh data                     | 200    | -        |
+| GET    | `/products/:id` | Tampilkan satu produk                      | 200    | 404      |
+| POST   | `/products`     | Buat data baru                             | 201    | 400      |
+| PUT    | `/products`     | Update data (body seperti POST + `id`)     | 200    | 400, 404 |
+| DELETE | `/products/:id` | Hapus data berdasarkan id                  | 200    | 404      |
 
-### Contoh Request dan Response
+Validasi body POST dan PUT: `name` string tidak kosong, `price` bilangan bulat >= 0, dan khusus PUT `id` bilangan bulat.
 
-**GET /products** -> 200
-
-```json
-[
-  { "id": 1, "name": "Buku", "price": 15000 },
-  { "id": 2, "name": "Pulpen", "price": 5000 }
-]
-```
-
-**GET /products/1** -> 200
-
-```json
-{ "id": 1, "name": "Buku", "price": 15000 }
-```
-
-**GET /products/999** -> 404
-
-```json
-{ "message": "Produk tidak ditemukan" }
-```
+### Contoh
 
 **POST /products** -> 201
-
-Body (JSON):
 
 ```json
 { "name": "Penggaris", "price": 7000 }
 ```
 
-Response:
+**PUT /products** -> 200
 
 ```json
-{ "id": 3, "name": "Penggaris", "price": 7000 }
+{ "id": 1, "name": "Buku Tulis", "price": 12000 }
 ```
 
-**POST /products** dengan body tidak valid -> 400
+**DELETE /products/2** -> 200
 
 ```json
-{ "message": "name (string) dan price (number) wajib diisi" }
+{ "message": "Produk berhasil dihapus", "data": { "id": 2, "name": "Pulpen", "price": 5000 } }
 ```
+
+Respons gagal selalu berbentuk `{ "message": "..." }`.
 
 ## Cara Menguji
 
-Pengujian memakai file `testing.http` dengan ekstensi **REST Client** di VS Code (`humao.rest-client`).
-
-1. Jalankan server dengan `npm start`.
-2. Buka `testing.http` di VS Code.
-3. Klik **Send Request** di atas masing-masing request. Respons (status + JSON) tampil di panel samping.
-
-Isi `testing.http`:
-
-```http
-### 1. GET semua produk -> 200 + array
-GET http://localhost:3000/products
-
-### 2. GET produk id 1 -> 200 + objek Buku
-GET http://localhost:3000/products/1
-
-### 3. GET produk id 999 -> 404 + pesan JSON
-GET http://localhost:3000/products/999
-
-### 4. POST produk baru -> 201 + produk dengan id baru
-POST http://localhost:3000/products
-Content-Type: application/json
-
-{
-  "name": "Penggaris",
-  "price": 7000
-}
-
-### 5. (opsional) POST data tidak valid -> 400
-POST http://localhost:3000/products
-Content-Type: application/json
-
-{
-  "name": "",
-  "price": "abc"
-}
-```
-
-## Bukti Pengujian
-
-Screenshot hasil `testing.http` berada di folder `screenshots`:
-
-| No  | Request                             | Hasil yang diharapkan                       |
-| --- | ----------------------------------- | ------------------------------------------- |
-| 1   | `GET /products`                     | 200 + array seluruh produk                  |
-| 2   | `GET /products/1`                   | 200 + objek produk Buku                     |
-| 3   | `GET /products/999`                 | 404 + pesan JSON produk tidak ditemukan     |
-| 4   | `POST /products`                    | 201 + produk baru                           |
-| 5   | `POST /products` (data tidak valid) | 400 + pesan JSON name dan price wajib diisi |
+Jalankan server, buka `testing.http` di VS Code (ekstensi REST Client), lalu klik **Send Request** pada tiap skenario (sukses, validasi gagal, id tidak ditemukan). Perubahan data bisa dicek lewat `npx prisma studio` atau dashboard Neon.
