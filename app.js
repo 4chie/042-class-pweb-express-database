@@ -14,6 +14,12 @@ app.use((req, res) => {
   res.status(404).json({ message: "Route tidak ditemukan" });
 });
 
+// Handler error umum (misalnya database tidak bisa diakses)
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: "Terjadi kesalahan pada server" });
+});
+
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
 });

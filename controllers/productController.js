@@ -1,40 +1,57 @@
-const products = require("../data/products");
+const prisma = require("../lib/prisma");
 
-const getAllProducts = (req, res) => {
-  res.status(200).json(products);
+// Validasi body untuk POST dan PUT: name string tidak kosong, price bilangan bulat >= 0
+const isValidProductBody = ({ name, price }) =>
+  typeof name === "string" &&
+  name.trim() !== "" &&
+  Number.isInteger(price) &&
+  price >= 0;
+
+const INVALID_BODY_MESSAGE =
+  "name (string) dan price (bilangan bulat >= 0) wajib diisi";
+
+const getAllProducts = async (req, res, next) => {
+  try {
+    const products = await prisma.product.findMany({ orderBy: { id: "asc" } });
+    res.status(200).json(products);
+  } catch (err) {
+    next(err);
+  }
 };
 
-const getProductById = (req, res) => {
-  const id = Number(req.params.id);
-  const product = products.find((p) => p.id === id);
+const getProductById = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const product = Number.isInteger(id)
+      ? await prisma.product.findUnique({ where: { id } })
+      : null;
 
-  if (!product) {
-    return res.status(404).json({ message: "Produk tidak ditemukan" });
+    if (!product) {
+      return res.status(404).json({ message: "Produk tidak ditemukan" });
+    }
+
+    res.status(200).json(product);
+  } catch (err) {
+    next(err);
   }
-
-  res.status(200).json(product);
 };
 
-const createProduct = (req, res) => {
-  const { name, price } = req.body || {};
+const createProduct = async (req, res, next) => {
+  try {
+    const body = req.body || {};
 
-  if (
-    typeof name !== "string" ||
-    name.trim() === "" ||
-    typeof price !== "number"
-  ) {
-    return res
-      .status(400)
-      .json({ message: "name (string) dan price (number) wajib diisi" });
+    if (!isValidProductBody(body)) {
+      return res.status(400).json({ message: INVALID_BODY_MESSAGE });
+    }
+
+    const newProduct = await prisma.product.create({
+      data: { name: body.name.trim(), price: body.price },
+    });
+
+    res.status(201).json(newProduct);
+  } catch (err) {
+    next(err);
   }
-
-  const newId =
-    products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
-
-  const newProduct = { id: newId, name: name.trim(), price };
-  products.push(newProduct);
-
-  res.status(201).json(newProduct);
 };
 
 module.exports = { getAllProducts, getProductById, createProduct };
